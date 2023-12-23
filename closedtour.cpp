@@ -1,65 +1,96 @@
 #include <bits/stdc++.h>
-using namespace std;
-
 #define N 8
 
-int solveKTUtil(int x, int y, int movei, int sol[N][N], int xMove[], int yMove[]);
+static int cx[N] = {1, 1, 2, 2, -1, -1, -2, -2};
+static int cy[N] = {2, -2, 1, -1, 2, -2, 1, -1};
 
-int isSafe(int x, int y, int sol[N][N]) {
-   return (x >= 0 && x < N && y >= 0 && y < N
-           && sol[x][y] == -1);
+bool limits(int x, int y) {
+   return ((x >= 0 && y >= 0) && (x < N && y < N));
 }
 
-void printSolution(int sol[N][N]) {
-   for (int x = 0; x < N; x++) {
-       for (int y = 0; y < N; y++)
-           cout << " " << setw(2) << sol[x][y] << " ";
-       cout << endl;
-   }
+bool isempty(int a[], int x, int y) {
+   return (limits(x, y)) && (a[y * N + x] < 0);
 }
 
-int solveKT() {
-   int sol[N][N];
+int getDegree(int a[], int x, int y) {
+   int count = 0;
+   for (int i = 0; i < N; ++i)
+       if (isempty(a, (x + cx[i]), (y + cy[i])))
+           count++;
 
-   for (int x = 0; x < N; x++)
-       for (int y = 0; y < N; y++)
-           sol[x][y] = -1;
-
-   int xMove[8] = { 2, 1, -1, -2, -2, -1, 1, 2 };
-   int yMove[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
-
-   sol[0][0] = 0;
-
-   if (solveKTUtil(0, 0, 1, sol, xMove, yMove) == 0) {
-       cout << "Solution does not exist";
-       return 0;
-   }
-   else
-       printSolution(sol);
-
-   return 1;
+   return count;
 }
 
-int solveKTUtil(int x, int y, int movei, int sol[N][N], int xMove[8], int yMove[8]) {
-   int k, next_x, next_y;
-   if (movei == N * N)
-       return 1;
+bool nextMove(int a[], int *x, int *y) {
+   int min_deg_idx = -1, c, min_deg = (N + 1), nx, ny;
 
-   for (k = 0; k < 8; k++) {
-       next_x = x + xMove[k];
-       next_y = y + yMove[k];
-       if (isSafe(next_x, next_y, sol)) {
-           sol[next_x][next_y] = movei;
-           if (solveKTUtil(next_x, next_y, movei + 1, sol, xMove, yMove) == 1)
-               return 1;
-           else
-               sol[next_x][next_y] = -1;
+   int start = rand() % N;
+   for (int count = 0; count < N; ++count) {
+       int i = (start + count) % N;
+       nx = *x + cx[i];
+       ny = *y + cy[i];
+       if ((isempty(a, nx, ny)) && (c = getDegree(a, nx, ny)) < min_deg) {
+           min_deg_idx = i;
+           min_deg = c;
        }
    }
-   return 0;
+
+   if (min_deg_idx == -1)
+       return false;
+
+   nx = *x + cx[min_deg_idx];
+   ny = *y + cy[min_deg_idx];
+
+   a[ny * N + nx] = a[(*y) * N + (*x)] + 1;
+
+   *x = nx;
+   *y = ny;
+
+   return true;
+}
+
+void print(int a[]) {
+   for (int i = 0; i < N; ++i) {
+       for (int j = 0; j < N; ++j)
+           printf("%d\t", a[j * N + i]);
+       printf("\n");
+   }
+}
+
+bool neighbour(int x, int y, int xx, int yy) {
+   for (int i = 0; i < N; ++i)
+       if (((x + cx[i]) == xx) && ((y + cy[i]) == yy))
+           return true;
+
+   return false;
+}
+
+bool findClosedTour() {
+   int a[N * N];
+   for (int i = 0; i < N * N; ++i)
+       a[i] = -1;
+
+   int sx = 0, sy = 0; 
+   int x = sx, y = sy;
+   a[y * N + x] = 1;
+
+   for (int i = 0; i < N * N - 1; ++i)
+       if (nextMove(a, &x, &y) == 0)
+           return false;
+
+   if (!neighbour(x, y, sx, sy))
+       return false;
+
+   print(a);
+   return true;
 }
 
 int main() {
-   solveKT();
+   srand(time(NULL));
+
+   while (!findClosedTour()) {
+       ;
+   }
+
    return 0;
 }
