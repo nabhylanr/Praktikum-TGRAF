@@ -1,4 +1,4 @@
-# Praktikum-TGRAF
+# Tugas Praktikum Teori Graf E
 
 Kelompok 12 
 1. Daffa Saskara - 5025211249
