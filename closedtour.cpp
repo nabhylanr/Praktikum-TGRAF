@@ -1,55 +1,65 @@
-#include <bits/stdc++.h>  
+#include <bits/stdc++.h>
 using namespace std;
 
-const int N = 8;
-int board[N][N];
-int moveCount = 0;
+#define N 8
 
-vector<pair<int, int>> validMoves(int row, int col) {
-    vector<pair<int, int>> moves;
-    int rowMoves[] = {-2, -1, 1, 2, 2, 1, -1, -2};
-    int colMoves[] = {1, 2, 2, 1, -1, -2, -2, -1};
-    for (int i = 0; i < 8; i++) {
-        int newRow = row + rowMoves[i];
-        int newCol = col + colMoves[i];
-        if (newRow >= 0 && newRow < N && newCol >= 0 && newCol < N && board[newRow][newCol] == 0) {
-            moves.push_back(make_pair(newRow, newCol));
-        }
-    }
-    return moves;
+int solveKTUtil(int x, int y, int movei, int sol[N][N], int xMove[], int yMove[]);
+
+int isSafe(int x, int y, int sol[N][N]) {
+   return (x >= 0 && x < N && y >= 0 && y < N
+           && sol[x][y] == -1);
 }
 
-bool solve(int row, int col, int moveNum) {
-    board[row][col] = moveNum;
-    moveCount++;
+void printSolution(int sol[N][N]) {
+   for (int x = 0; x < N; x++) {
+       for (int y = 0; y < N; y++)
+           cout << " " << setw(2) << sol[x][y] << " ";
+       cout << endl;
+   }
+}
 
-    if (moveNum == N*N) {
-        return true;
-    }
+int solveKT() {
+   int sol[N][N];
 
-    vector<pair<int, int>> moves = validMoves(row, col);
-    for (pair<int, int> move : moves) {
-        int newRow = move.first;
-        int newCol = move.second;
-        if (solve(newRow, newCol, moveNum+1)) {
-            return true;
-        }
-    }
+   for (int x = 0; x < N; x++)
+       for (int y = 0; y < N; y++)
+           sol[x][y] = -1;
 
-    board[row][col] = 0;
-    moveCount--;
-    return false;
+   int xMove[8] = { 2, 1, -1, -2, -2, -1, 1, 2 };
+   int yMove[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
+
+   sol[0][0] = 0;
+
+   if (solveKTUtil(0, 0, 1, sol, xMove, yMove) == 0) {
+       cout << "Solution does not exist";
+       return 0;
+   }
+   else
+       printSolution(sol);
+
+   return 1;
+}
+
+int solveKTUtil(int x, int y, int movei, int sol[N][N], int xMove[8], int yMove[8]) {
+   int k, next_x, next_y;
+   if (movei == N * N)
+       return 1;
+
+   for (k = 0; k < 8; k++) {
+       next_x = x + xMove[k];
+       next_y = y + yMove[k];
+       if (isSafe(next_x, next_y, sol)) {
+           sol[next_x][next_y] = movei;
+           if (solveKTUtil(next_x, next_y, movei + 1, sol, xMove, yMove) == 1)
+               return 1;
+           else
+               sol[next_x][next_y] = -1;
+       }
+   }
+   return 0;
 }
 
 int main() {
-    int startRow = 0, startCol = 0;
-    solve(startRow, startCol, 1);
-    cout << "Number of moves: " << moveCount << endl;
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            cout << board[i][j] << " ";
-        }
-        cout << endl;
-    }
-    return 0;
+   solveKT();
+   return 0;
 }
